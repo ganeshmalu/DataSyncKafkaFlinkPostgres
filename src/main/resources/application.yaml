@@ -1,0 +1,7 @@
+# Simple configuration for standalone Flink job
+# This file is kept for reference but the job uses system properties
+logging:
+  level:
+    com.baylor: INFO
+    org.apache.flink: WARN
+    root: INFO
