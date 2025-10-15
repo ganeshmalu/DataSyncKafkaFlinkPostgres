@@ -1,0 +1,32 @@
+{
+  "name": "mssql-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.sqlserver.SqlServerConnector",
+    "database.hostname": "10.27.117.30",
+    "database.port": "1433",
+    "database.user": "sql_qa_nonstop",
+    "database.password": "rzZH63SjTNxxh3",
+    "database.names": "MGL",
+    "database.encrypt": "false",
+    
+    "topic.prefix": "sqlserver1",
+    "schema.history.internal.kafka.bootstrap.servers": "10.27.117.113:9092",
+    "schema.history.internal.kafka.topic": "schema-changes.sqlserver1",
+    "snapshot.mode": "when_needed",
+    "provide.transaction.metadata": "true",
+    "tombstones.on.delete": "false",
+    
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    
+    "key.converter.schemas.enable": "false",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false",
+    
+    "schema.history.internal.store.only.captured.tables.ddl": "true",
+    "table.include.list": "dbo.Samples,dbo.SamplesAdditionalInfo",
+    "max.batch.size": "512",
+    "max.queue.size": "2048",
+    "poll.interval.ms": "1000",
+    "database.query.fetch.size": "1000"
+  }
+}

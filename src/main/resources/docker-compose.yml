@@ -1,0 +1,63 @@
+services:
+  # Debezium Kafka Connect (will connect to external Kafka)
+  connect:
+    image: debezium/connect:2.6
+    container_name: debezium
+    ports:
+      - "8083:8083"
+    environment:
+      # --- Kafka (external) ---
+      BOOTSTRAP_SERVERS: 10.27.117.113:9092   # external Kafka bootstrap server
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: connect_configs
+      OFFSET_STORAGE_TOPIC: connect_offsets
+      STATUS_STORAGE_TOPIC: connect_statuses
+
+      # --- Converters ---
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      # --- Debezium plugin path ---
+      PLUGIN_PATH: /kafka/connect
+    volumes:
+      - connect_data:/kafka/connect/data   # persists connector offset + schema cache
+
+  # Apache Flink - JobManager
+  jobmanager:
+    image: public.ecr.aws/docker/library/flink:1.18-scala_2.12
+    container_name: jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+    command: jobmanager
+    ports:
+      - "8081:8081" # Flink Web UI REST API
+      - "6123:6123" # JobManager RPC
+    volumes:
+      - flink_data:/opt/flink/usrlib
+
+  # Apache Flink - TaskManager
+  taskmanager:
+    image: public.ecr.aws/docker/library/flink:1.18-scala_2.12
+    container_name: taskmanager
+    depends_on:
+      - jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+    command: taskmanager
+    volumes:
+      - flink_data:/opt/flink/usrlib
+
+  # Kafka UI (connects to external Kafka cluster)
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: dev
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 10.27.117.113:9092
+
+volumes:
+  connect_data:
+  flink_data:
