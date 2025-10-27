@@ -9,10 +9,10 @@ services:
       # --- Kafka (external) ---
       BOOTSTRAP_SERVERS: 10.27.117.113:9092   # external Kafka bootstrap server
       GROUP_ID: 1
-      CONFIG_STORAGE_TOPIC: connect_configs
-      OFFSET_STORAGE_TOPIC: connect_offsets
-      STATUS_STORAGE_TOPIC: connect_statuses
-
+      CONFIG_STORAGE_TOPIC: sqlserver.connect_configs
+      OFFSET_STORAGE_TOPIC: sqlserver.connect_offsets
+      STATUS_STORAGE_TOPIC: sqlserver.connect_statuses
+      
       # --- Converters ---
       KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter

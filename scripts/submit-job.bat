@@ -5,14 +5,14 @@ REM For submitting the job to your existing Flink cluster
 echo Submitting Flink job to existing cluster...
 
 REM Check if JAR exists
-if not exist "target\postgresSync-0.0.1-SNAPSHOT.jar" (
+if not exist "..\target\postgresSync-0.0.1-SNAPSHOT.jar" (
     echo Error: JAR file not found. Building project...
     mvn clean package -DskipTests
 )
 
 REM Copy JAR to Flink container
 echo Copying JAR to Flink container...
-docker cp target\postgresSync-0.0.1-SNAPSHOT.jar jobmanager:/opt/flink/usrlib/
+docker cp ..\target\postgresSync-0.0.1-SNAPSHOT.jar jobmanager:/opt/flink/usrlib/
 
 docker exec jobmanager /opt/flink/bin/flink run --class com.baylor.postgresSync.sync.FlinkMSSQLToPostgresJob --parallelism 1 /opt/flink/usrlib/postgresSync-0.0.1-SNAPSHOT.jar
 

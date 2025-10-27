@@ -40,9 +40,9 @@ public class FlinkMSSQLToPostgresJob {
 	public static void main(String[] args) throws Exception {
 		// Parse command line arguments or use defaults
 		String kafkaBootstrapServers = getProperty("kafka.bootstrap.servers", "10.27.117.113:9092");
-		String kafkaSamplesTopic = getProperty("kafka.Samples.topic", "sqlserver1.MGL.dbo.Samples");
+		String kafkaSamplesTopic = getProperty("kafka.Samples.topic", "sqlserver.MGL.dbo.Samples");
 		String kafkaSamplesAdditionalInfoTopic = getProperty("kafka.SamplesAdditionalInfo.topic",
-				"sqlserver1.MGL.dbo.SamplesAdditionalInfo");
+				"sqlserver.MGL.dbo.SamplesAdditionalInfo");
 		String kafkaGroupId = getProperty("kafka.group.id", "flink-consumer");
 		String databaseUrl = getProperty("database.url", "jdbc:postgresql://10.27.117.24:5432/targetDBPostgres");
 		String databaseUsername = getProperty("database.username", "svc_pgsql_admin");
