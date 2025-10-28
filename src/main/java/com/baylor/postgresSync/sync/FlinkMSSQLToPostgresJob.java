@@ -12,7 +12,10 @@ import org.apache.flink.connector.jdbc.JdbcStatementBuilder;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema;
+import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
+import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
@@ -59,7 +62,7 @@ public class FlinkMSSQLToPostgresJob {
 		int batchSize = Integer.parseInt(getProperty("flink.jdbc.batch.size", "50"));
 		long batchIntervalMs = Long.parseLong(getProperty("flink.jdbc.batch.interval.ms", "200"));
 		int maxRetries = Integer.parseInt(getProperty("flink.jdbc.max.retries", "3"));
-		long checkpointInterval = Long.parseLong(getProperty("flink.checkpoint.interval", "5000"));
+		long checkpointInterval = Long.parseLong(getProperty("flink.checkpoint.interval", "10000"));
 
 		logger.info("Starting Flink MSSQL to PostgreSQL sync job");
 		logger.info("Kafka Bootstrap Servers: {}", kafkaBootstrapServers);
@@ -72,7 +75,11 @@ public class FlinkMSSQLToPostgresJob {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 		// Enable checkpointing
-		env.enableCheckpointing(checkpointInterval);
+		env.enableCheckpointing(checkpointInterval, CheckpointingMode.EXACTLY_ONCE);
+		
+		// Configure checkpoint storage (local or distributed)
+		env.setStateBackend(new HashMapStateBackend());
+		env.getCheckpointConfig().setCheckpointStorage("file:///opt/flink/usrlib");
 
 		// Configure parallelism
 		env.setParallelism(1); // Adjust based on your needs
@@ -80,7 +87,7 @@ public class FlinkMSSQLToPostgresJob {
 		// Create Kafka source (capture topic + value)
 		KafkaSource<Envelope> kafkaSource = KafkaSource.<Envelope>builder().setBootstrapServers(kafkaBootstrapServers)
 				.setTopics(java.util.Arrays.asList(kafkaSamplesTopic, kafkaSamplesAdditionalInfoTopic))
-				.setGroupId(kafkaGroupId).setStartingOffsets(OffsetsInitializer.latest())
+				.setGroupId(kafkaGroupId).setStartingOffsets(OffsetsInitializer.committedOffsets())
 				.setDeserializer(new EnvelopeDeserializer()).build();
 
 		// Create data stream from Kafka
